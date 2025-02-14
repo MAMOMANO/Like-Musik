@@ -1,77 +1,60 @@
-document.getElementById("searchBtn").addEventListener("click",function(){
-const query =document.getElementById("searchInput").value;
-searchSong(query);
+document.getElementById("searchBtn").addEventListener("click", function () {
+    const query = document.getElementById("searchInput").value;
+    searchSong(query);
 });
 
 async function searchSong(query) {
-    if(!query){
-        alert("Masukan Judul lagunya terlebih dahulu");
+    if (!query) {
+        alert("Masukkan Judul lagunya terlebih dahulu");
         return;
     }
-    
-    try{
-    const response =await fetch(`https://deezerdevs-deezer.p.rapidapi.com/search?q=${query}`, {
-        method : "GET",
-        headers : {
-        "X-RapidAPI-Key":"ceb7885ea4mshdcfd3eceeeb410cp1658c3jsndbd98e6f70df",
-        "X-RapidAPI-Host": "deezerdevs-deezer.p.rapidapi.com"
-        }
 
-    });
-    
-    if(!response.ok){
-            throw new Error("gagal mengambil data dari API")
-         }
+    try {
+        const response = await fetch(`http://localhost:3000/search?q=${query}`);
+        if (!response.ok) {
+            throw new Error("Gagal mengambil data dari server");
+        }
 
         const data = await response.json();
         displayResults(data.data);
     } catch (error) {
-        console.error("Error", error);
+        console.error("Error:", error);
         alert("Terjadi kesalahan saat mengambil data");
-
     }
 }
-// array untuk menyimpan elemen audio
+
 let audioPlayers = [];
 
-// menampilkan hasil pwncarian ke halaman
-
 function displayResults(songs) {
-    const resultsContainer =document.getElementById("results");
+    const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = "";
-
-    audioPlayers =[];
+    audioPlayers = [];
 
     songs.forEach(song => {
-        const songCard =document.createElement("div");
-        songCard.classList = "bg-white p-4 rounded-lg shadow-md text-center ";
+        const songCard = document.createElement("div");
+        songCard.classList = "bg-white p-4 rounded-lg shadow-md text-center";
 
         songCard.innerHTML = `
         <img src="${song.album.cover_medium}" class="w-full rounded-md transform hover:scale-105 transition duration-300">
         <h2 class="text-lg font-semibold mt-2">${song.title}</h2>
         <p class="text-gray-600">${song.artist.name}</p>
         <audio controls class="w-full mt-2">
-        <source src="${song.preview}" type="audio/mpeg">
-        Browser kamu tidak mendukung audio tag.
+            <source src="${song.preview}" type="audio/mpeg">
+            Browser kamu tidak mendukung audio tag.
         </audio>
         `;
 
-        // ambil elemen audio yang baru di buat
         const audioElement = songCard.querySelector("audio");
-
-        // tambahakan even listener untuk menghentikan audio
-
-        audioElement.addEventListener("play", function(){
-            audioPlayers.forEach(audio=>{
-                if(audio !== audioElement){
+        audioElement.addEventListener("play", function () {
+            audioPlayers.forEach(audio => {
+                if (audio !== audioElement) {
                     audio.pause();
                 }
             });
         });
 
         audioPlayers.push(audioElement);
-
-        resultsContainer.appendChild(songCard)
+        resultsContainer.appendChild(songCard);
     });
 }
 
